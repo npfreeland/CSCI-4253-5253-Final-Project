@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>NBA STATS</title>
+    <link rel="stylesheet" href="../static/css/styles.css">
+    <link rel="icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css?family=Dancing+Script|Great+Vibes|Oswald&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Anton|Dancing+Script|Fredericka+the+Great|Great+Vibes|Lobster|Parisienne|Permanent+Marker|Sacramento|Satisfy|Spicy+Rice&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Girassol&family=Special+Elite&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  <script>
+     $(function(){
+     var navMain = $(".navbar-collapse");
+
+     navMain.on("click", "a", null, function () {
+         navMain.collapse('hide');
+     });
+ });
+    </script>
+  </head>
+  <body style="background: #FFBC80">
+    <section id="title">
+  <div class="con">
+      <!-- Nav Bar before updation color was e4f9f5      navbar-light        navbar navbar-expand-lg -->
+      <nav class="navbar navbar navbar-expand-lg " style="background-color: #F76E11; color: #FFFFFF">
+        <a class="navbar-brand" href="#"><h1 style= "color:#000000;">NBA STATS</h1></a>
+
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"  aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="index.html" ><h5 style="color:#000000;">HOME</h5> <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="https://www.nba.com/" ><h5 style="color:#000000;">ABOUT NBA</h5> <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"  href="team.html" ><h5 style="color:#000000;">TEAM</h5></a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <br><br><br><br>
+<section id="HOME">
+<center><h3 style="color:#000000;"><b>NBA Stats Visualization and Prediction!<br></b></h3>
+  <br>
+<div class="c" style="background: #FFBC80">
+<h4 > Welcome!</h4>
+<h5 class="Srow">
+Want to know the about the upcoming game, you are in the right page! This page is for you. It gives you the Visualizations and prediction for NBA.
+<br><br>Want see some Visualizations click the button below <br>
+<br><button class="button-17" type="button" name="signup" onclick="window.location.href='visualize.html';"><b>Game Visualization</b></button><br><br>Want see the prediction for the future game? Click the button below<br><br><buttonv class="button-17" type="button" name="signin"onclick="window.location.href='predict.html';"><b>Game Prediction</b></button></h5>
+</center></section>
+  </body>
+</html>
