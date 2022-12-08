@@ -1,0 +1,31 @@
+<!-- Community sentiment page template -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NBA Statistics - Community Sentiment</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Community Sentiment</h1>
+    <form action="/community-sentiment" method="post">
+        <h2>Upcoming Games</h2>
+        <ul id="games-list"></ul>
+    </form>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        // Fetch the upcoming games data from the Flask app using an AJAX request
+        d3.json("/upcoming-games", function(error, data) {
+            if (error) throw error;
+            // Select the games list element
+            var gamesList = d3.select("#games-list");
+            // Append a list item for each game
+            data.forEach(function(d) {
+                gamesList.append("li")
+                    .html("<input type='radio' name='" + d.id + "' value='home'> " + d.homeTeam +
+                          "<input type='radio' name='" + d.id + "' value='away'> " + d.awayTeam);
+            });
+        });
+    </script>
+</body>
+</html>
+

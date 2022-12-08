@@ -1,0 +1,66 @@
+// Load the D3.js library and the Minio Python client
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/minio@6.0.7/dist/minio.min.js"></script>
+
+// Create a bar chart using D3.js and data from the Minio bucket
+<script>
+    var data = [];
+
+    // Fetch the data from the Minio bucket using the Minio Python client
+    var minioClient = new minio.Client({
+        endPoint: 'minio.example.com',
+        accessKey: 'ACCESS_KEY',
+        secretKey: 'SECRET_KEY'
+    });
+    minioClient.getObject('nba-statistics-bucket', 'player-statistics.json', function(err, dataStream) {
+        if (err) {
+            // Handle error
+        } else {
+            dataStream.on('data', function(chunk) {
+                // Append the data to the array
+                data.push(...chunk);
+            });
+            dataStream.on('end', function() {
+                // Create the chart using the fetched data
+                var margin = {top: 20, right: 20, bottom: 30, left: 40},
+                    width = 960 - margin.left - margin.right,
+                    height = 500 - margin.top - margin.bottom;
+
+                var x = d3.scaleBand()
+                    .rangeRound([0, width])
+                    .padding(0.1);
+
+                var y = d3.scaleLinear()
+                    .rangeRound([height, 0]);
+
+                var svg = d3.select("body").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                data.forEach(function(d) {
+                    d.points = +d.points;
+                    d.rebounds = +d.rebounds;
+                    d.assists = +d.assists;
+                });
+
+                x.domain(data.map(function(d) { return d.name; }));
+                y.domain([0, d3.max(data, function(d) { return d.points; })]);
+
+                svg.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", function(d) { return x(d.name); })
+        .attr("y", function(d) { return y(d.points); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return height - y(d.points); });
+
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    svg.append("g")
+        .call(d3.axisLeft(y));
+</script>
