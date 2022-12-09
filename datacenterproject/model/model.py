@@ -4,12 +4,9 @@ import matplotlib.pylab as plt
 import os
 import random as r
 from minio import Minio
-import pickle
+import joblib
 
-minioHost = os.getenv("MINIO_HOST") or "localhost:9000"
-minioUser = os.getenv("MINIO_USER") or "rootuser"
-minioPasswd = os.getenv("MINIO_PASSWD") or "rootpass123"
-minioClient = Minio(minioHost,access_key = minioUser, secret_key=minioPasswd, secure=False)
+
 # %matplotlib inline
 
 # pip install nba_api
@@ -23,11 +20,7 @@ from sklearn.model_selection import train_test_split
 # Helper function to draw court
 from matplotlib.patches import Circle, Rectangle, Arc
 
-queueBucketName = "inputs"
-outputBucketName = "outputs"
 
-nba_teams = teams.get_teams()
-nba_players = players.get_players()
 
 
 def draw_court(ax=None, color='black', lw=2, outer_lines=False):
@@ -143,104 +136,91 @@ def get_game_data():
 # def get_team_data():
 
 
-class Models:
-    def __init__(self):
 
-        games = get_game_data()
+def create_models(X_train, y_train):
 
-        outcomes = games[games.columns[7]]
-        gamestats = games[games.columns[10:27]]    
+    # LinearSVC classification
+    from sklearn.svm import LinearSVC
+    lclf = LinearSVC(random_state=0, tol=1e-5, max_iter=1000)
+    lclf.fit(X_train, y_train)
 
-        X_train = gamestats.to_numpy()
-        y_train = outcomes.to_numpy()
+    print("LinearSVC model created")
+    
+    # KNN model attempt k=10
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn import preprocessing
+    knn = KNeighborsClassifier(n_neighbors=10)
+    knn.fit(X_train, y_train)
+    print("KNN model created")
 
-        self.lclf, self.knn, self.clf, self.advclf, self.routcomes = self.create_models(X_train, y_train)
+    # SVC prediction model attempt gamma set to 'scale' 
+    from sklearn.svm import SVC
+    from sklearn import svm
+    clf = SVC(gamma='scale',probability=True)
+    clf.fit(X_train, y_train)
+    print("SVC model created")
 
-    def create_models(self, X_train, y_train):
+    #BaggingSVC Ensemble classification
+    from sklearn.svm import SVC
+    from sklearn.ensemble import BaggingClassifier
+    advclf = BaggingClassifier(base_estimator=SVC(gamma='scale'), n_estimators=10, random_state=0)
+    advclf.fit(X_train, y_train)
+    print("BaggingSVC model created")
 
-        # LinearSVC classification
-        from sklearn.svm import LinearSVC
-        lclf = LinearSVC(random_state=0, tol=1e-5, max_iter=1000)
-        lclf.fit(X_train, y_train)
+    # Random Forest Classification model
+    from sklearn.ensemble import RandomForestClassifier
+    routcomes = RandomForestClassifier(max_depth=8, random_state=0, n_estimators=300)
+    routcomes.fit(X_train, y_train)
+    print("Random Forest model created")
 
-        print("LinearSVC model created")
-        
-        # KNN model attempt k=10
-        from sklearn.neighbors import KNeighborsClassifier
-        from sklearn import preprocessing
-        knn = KNeighborsClassifier(n_neighbors=10)
-        knn.fit(X_train, y_train)
-        print("KNN model created")
-
-        # SVC prediction model attempt gamma set to 'scale' 
-        from sklearn.svm import SVC
-        from sklearn import svm
-        clf = SVC(gamma='scale',probability=True)
-        clf.fit(X_train, y_train)
-        print("SVC model created")
-
-        #BaggingSVC Ensemble classification
-        from sklearn.svm import SVC
-        from sklearn.ensemble import BaggingClassifier
-        advclf = BaggingClassifier(base_estimator=SVC(gamma='scale'), n_estimators=10, random_state=0)
-        advclf.fit(X_train, y_train)
-        print("BaggingSVC model created")
-
-        # Random Forest Classification model
-        from sklearn.ensemble import RandomForestClassifier
-        routcomes = RandomForestClassifier(max_depth=8, random_state=0, n_estimators=300)
-        routcomes.fit(X_train, y_train)
-        print("Random Forest model created")
-
-        return lclf, knn, clf, advclf, routcomes
+    return lclf, knn, clf, advclf, routcomes
 
 
-    def test_models_single_team(self, team_name='Denver Nuggets'):
-        team_id = get_team_id(team_name)
-        team_games = leaguegamefinder.LeagueGameFinder(team_id_nullable=team_id,season_nullable='2021-22'or'2022-23')
-        team_games = team_games.get_data_frames()[0]
-        team_games = team_games.dropna(how='any',axis=0)
+def test_models_single_team(lclf, knn, clf, advclf, routcomes, team_name='Denver Nuggets'):
+    team_id = get_team_id(team_name)
+    games = get_game_data()
+    team_games = games[(games.TEAM_ID == team_id) & (games.SEASON_ID.str[-4:] == '2020')]
 
-        team_outcomes = team_games[games.columns[7]]
-        team_gamestats = team_games[games.columns[10:27]]
-        # team_gamestats_mean = pd.DataFrame(team_gamestats.mean(axis=0)).transpose()
-        # team_gamestats_mean_X = pd.DataFrame(np.repeat(team_gamestats_mean.values, len(team_games), axis=0))
+    team_outcomes = team_games[games.columns[7]]
+    team_gamestats = team_games[games.columns[10:27]]
+    # team_gamestats_mean = pd.DataFrame(team_gamestats.mean(axis=0)).transpose()
+    # team_gamestats_mean_X = pd.DataFrame(np.repeat(team_gamestats_mean.values, len(team_games), axis=0))
 
-        X_test = team_gamestats.to_numpy()
-        # X_test = team_gamestats_mean_X.to_numpy()
-        y_test = team_outcomes.to_numpy()
+    X_test = team_gamestats.to_numpy()
+    # X_test = team_gamestats_mean_X.to_numpy()
+    y_test = team_outcomes.to_numpy()
 
-        scores_list = []
-        scores_list.append(self.lclf.score(X_test,y_test))
-        scores_list.append(self.knn.score(X_test, y_test))
-        scores_list.append(self.clf.score(X_test,y_test))
-        scores_list.append(self.advclf.score(X_test,y_test))
-        scores_list.append(self.routcomes.score(X_test,y_test))
+    scores_list = []
+    scores_list.append(lclf.score(X_test,y_test))
+    scores_list.append(knn.score(X_test, y_test))
+    scores_list.append(clf.score(X_test,y_test))
+    scores_list.append(advclf.score(X_test,y_test))
+    scores_list.append(routcomes.score(X_test,y_test))
 
-        return scores_list
+    return scores_list
 
 
-    def test_models_all(self):
-        team_names = []
-        scores = []
-        for team in nba_teams:
-            tmp_scores = self.test_models_single_team(games_file, team['full_name'])
-            team_names.append(team['full_name'])
-            scores.append(tmp_scores)
-        scores_df = pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest'])
+def test_models_all(lclf, knn, clf, advclf, routcomes):
+    team_names = []
+    scores = []
+    for team in nba_teams:
+        tmp_scores = test_models_single_team(lclf, knn, clf, advclf, routcomes, team['full_name'])
+        team_names.append(team['full_name'])
+        scores.append(tmp_scores)
+    scores_df = pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest'])
 
-        return scores_df
+    return scores_df
     
 
 def get_player_id(playername):
     player = [player for player in nba_players
             if player['full_name'] == playername][0]
-    return player['id']
+    return str(player['id'])
 
 def get_team_id(teamname):
     team = [team for team in nba_teams
             if team['full_name'] == teamname][0]
-    return team['id']
+    return str(team['id'])
 
 
 def get_player_shot_data(playername, teamname, season_nullable='2021-22'):
@@ -255,10 +235,52 @@ def get_player_shot_data(playername, teamname, season_nullable='2021-22'):
 
 
 if __name__=='__main__':
-    
-    models = Models()
-    # scores_df = test_models_all()
-    # scores_df.style.background_gradient(cmap ='YlOrRd')\
-    #             .set_properties(**{'font-size': '20px'})
+    minioHost = os.getenv("MINIO_HOST") or "localhost:9000"
+    minioUser = os.getenv("MINIO_USER") or "rootuser"
+    minioPasswd = os.getenv("MINIO_PASSWD") or "rootpass123"
+    minioClient = Minio(minioHost,access_key = minioUser, secret_key=minioPasswd, secure=False)
+    queueBucketName = "inputs"
+    outputBucketName = "outputs"
 
+    nba_teams = teams.get_teams()
+    nba_players = players.get_players()
+
+    # if models do not exist, create them
+    path = '/home/User/Desktop/file.txt'
+    if not os.path.exists('./trained_models/'):
+        os.makedirs('./trained_models/')
+        
+        games = get_game_data()
+
+        train_games = games[games.SEASON_ID.str[-4:] != '2020']
+
+        outcomes = games[games.columns[7]]
+        gamestats = games[games.columns[10:27]]    
+
+        X_train = gamestats.to_numpy()
+        y_train = outcomes.to_numpy()
+
+        lclf, knn, clf, advclf, routcomes = create_models(X_train, y_train)
+
+
+        # save models
+        joblib.dump(lclf, "./trained_models/lclf.pkl")
+        joblib.dump(knn, "./trained_models/knn.pkl")
+        joblib.dump(clf, "./trained_models/clf.pkl")
+        joblib.dump(advclf, "./trained_models/advclf.pkl")
+        joblib.dump(routcomes, "./trained_models/routcomes.pkl")
+
+    else:
+        # load models
+        lclf = joblib.load("./trained_models/lclf.pkl")
+        knn = joblib.load("./trained_models/knn.pkl")
+        clf = joblib.load("./trained_models/clf.pkl")
+        advclf = joblib.load("./trained_models/advclf.pkl")
+        routcomes = joblib.load("./trained_models/routcomes.pkl")
+
+
+    scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
+    # scores_df = scores_df.style.background_gradient(cmap ='YlOrRd').set_properties(**{'font-size': '20px'})
         # cmap ='viridis'
+    
+    scores_df.to_csv('scores.csv')
