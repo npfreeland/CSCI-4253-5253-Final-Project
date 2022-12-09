@@ -29,7 +29,7 @@ gamefinder = leaguegamefinder.LeagueGameFinder(league_id_nullable='00')
 # The first DataFrame of those returned is what we want.
 games = gamefinder.get_data_frames()[0]
 games = games.dropna(how='any',axis=0)
-games.head(10)
+
 
 # Convert the dataframe into the list 
 list_to_pass = [games.columns.values.tolist()] + games.values.tolist()

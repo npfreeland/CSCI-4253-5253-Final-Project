@@ -2,12 +2,12 @@ import pika
 import json
 import os
 from minio import Minio
-from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
-                         BucketAlreadyExists)
 import os
 from io import BytesIO
 import pandas as pd
-from nba_api.stats.endpoints import Player, Team, LeagueStandings, ScoreboardV2
+from nba_api.stats.static import players, teams
+from nba_api.stats.endpoints import leaguestandings
+# might need scoreboardv2
 
 
 
@@ -64,6 +64,5 @@ def createBuckets():
 channel.basic_consume(queue='DataQueue', auto_ack=False, on_message_callback=callback)
 
 channel.start_consuming()
-
 
 
