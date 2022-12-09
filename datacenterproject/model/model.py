@@ -89,23 +89,23 @@ def model():
     routcomes.fit(X_train, y_train)
     print(routcomes.score(X_test,y_test))
 
-    # XGBoost Classification (Accuracy of 68.61%)
-    # from xgboost import XGBClassifier
-    # from sklearn.metrics import accuracy_score
-    # xgbModel = XGBClassifier()
-    # xgbModel.fit(X_train, y_train)
-    # xgbPredictions = xgbModel.predict(X_test)
-    # xgbAccuracy = accuracy_score(y_test, xgbPredictions)
-
     from nba_api.stats.static import teams
     from nba_api.stats.static import players
 
     nba_teams = teams.get_teams()
     nba_players = players.get_players()
 
-    print("type of teams and players")
     print(type(nba_teams))
     print(type(nba_players))
+
+    def get_team_games(team_name, season):
+        team = [team for team in nba_teams
+                if team['full_name'] == team_name][0]
+        team_games = leaguegamefinder.LeagueGameFinder(team_id_nullable=team['id'],season_nullable=season)
+        team_games = team_games.get_data_frames()[0]
+        team_games = team_games.dropna(how='any',axis=0)
+        return team_games
+
     team = [team for team in nba_teams
             if team['full_name'] == 'Los Angeles Lakers'][0]
 
@@ -173,6 +173,15 @@ def model():
             .set_properties(**{'font-size': '20px'})
 
     # cmap ='viridis'
+
+
+    def get_player_shot_data(playername, teamname):
+        player = [player for player in nba_players
+                if player['full_name'] == playername][0]
+        team = [team for team in nba_teams
+                if team['full_name'] == teamname][0]
+        shot_data = ep.shotchartdetail.ShotChartDetail(player_id = player['id'], team_id = team['id'], season_nullable = '2021-22').get_data_frames()[0]
+        return shot_data
 
     playername = 'Nikola Jokic'
     jokic = [player for player in nba_players

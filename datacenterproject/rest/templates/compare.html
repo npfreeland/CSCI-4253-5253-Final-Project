@@ -1,0 +1,26 @@
+<!-- Comparison page template -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NBA Statistics - Compare</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Compare NBA Statistics</h1>
+    <form action="/compare" method="post">
+        <h2>Players</h2>
+        <!-- Display a checkbox for each available player -->
+        {% for player in players %}
+            <input type="checkbox" name="players" value="{{ player.name }}"> {{ player.name }}<br>
+        {% endfor %}
+        <h2>Teams</h2>
+        <!-- Display a checkbox for each available team -->
+        {% for team in teams %}
+            <input type="checkbox" name="teams" value="{{ team.teamName }}"> {{ team.teamName }}<br>
+        {% endfor %}
+        <br>
+        <!-- Submit button -->
+        <input type="submit" value="Compare">
+    </form>
+</body>
+</html>
