@@ -1,6 +1,6 @@
 from flask import Flask,  render_template  
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import leaguestandings
+from nba_api.stats.endpoints import LeagueStandings
 app = Flask(__name__)
 
 @app.route('/')
