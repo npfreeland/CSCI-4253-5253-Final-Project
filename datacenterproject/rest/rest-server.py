@@ -1,6 +1,6 @@
 from flask import Flask,  render_template  
 from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import leaguestandings
+from nba_api.stats.endpoints import LeagueStandings
 app = Flask(__name__)
 
 @app.route('/')
@@ -10,7 +10,7 @@ def home():
 
 @app.route('/players')
 def players():
-    players = Player.get_active_players()
+    players = players.get_active_players()
     return render_template('players.html', players=players)
 
 @app.route('/standings')
@@ -45,23 +45,23 @@ def standings():
 #     # Pass the available players and teams to the template
 #     return render_template('compare.html', players=players, teams=teams)
 
-# # Define a route for handling comparison requests
-# @app.route('/compare', methods=['POST'])
-# def compare_stats():
-#     # Get the selected players and teams from the request parameters
-#     players = request.form.getlist('players')
-#     teams = request.form.getlist('teams')
+# Define a route for handling comparison requests
+@app.route('/compare', methods=['POST'])
+def compare_stats():
+    # Get the selected players and teams from the request parameters
+    players = request.form.getlist('players')
+    teams = request.form.getlist('teams')
 
-#     # Fetch the statistics for the selected players and teams from the Minio bucket
-#     player_stats = minio_client.get_object('nba-statistics-bucket', 'player-statistics.json')
-#     player_data = player_stats.read().decode('utf-8')
-#     selected_players = [d for d in player_data if d['name'] in players]
-#     team_stats = minio_client.get_object('nba-statistics-bucket', 'team-statistics.json')
-#     team_data = team_stats.read().decode('utf-8')
-#     selected_teams = [d for d in team_data if d['teamName'] in teams]
+    # Fetch the statistics for the selected players and teams from the Minio bucket
+    player_stats = minio_client.get_object('nba-statistics-bucket', 'player-statistics.json')
+    player_data = player_stats.read().decode('utf-8')
+    selected_players = [d for d in player_data if d['name'] in players]
+    team_stats = minio_client.get_object('nba-statistics-bucket', 'team-statistics.json')
+    team_data = team_stats.read().decode('utf-8')
+    selected_teams = [d for d in team_data if d['teamName'] in teams]
 
-#     # Pass the selected player and team data to the template for display
-#     return render_template('compare-results.html', players=selected_players, teams=selected_teams)
+    # Pass the selected player and team data to the template for display
+    return render_template('compare-results.html', players=selected_players, teams=selected_teams)
 
 
 #================================================================================================
