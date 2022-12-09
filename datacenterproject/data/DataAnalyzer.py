@@ -2,12 +2,12 @@ import pika
 import json
 import os
 from minio import Minio
-from minio.error import (ResponseError, BucketAlreadyOwnedByYou,
-                         BucketAlreadyExists)
 import os
 from io import BytesIO
 import pandas as pd
-from nba_api.stats.endpoints import Player, Team, LeagueStandings, ScoreboardV2
+from nba_api.stats.static import players, teams
+from nba_api.stats.endpoints import leaguestandings
+# might need scoreboardv2
 
 queueBucketName = "inputs"
 outputBucketName = "outputs"
@@ -62,11 +62,11 @@ def getActivePlayers():
 
     # Save the list of players as a JSON file on the Minio server
     json_data = json.dumps(players)
-    minioClient.put_object('nba-data', 'players.json', json_data, 'application/json')
+    minioClient.put_object('nba-statistics-bucket', 'players.json', json_data, 'application/json')
 
     # Retrieve the list of players from the Minio server
     try:
-        data = client.get_object('nba-data', 'players.json')
+        data = minioClient.get_object('nba-statistics-bucket', 'players.json')
         json_data = data.read()
         players = json.loads(json_data)
     except ResponseError as err:
