@@ -208,7 +208,7 @@ def test_models_all(lclf, knn, clf, advclf, routcomes):
         tmp_scores = test_models_single_team(lclf, knn, clf, advclf, routcomes, team['full_name'])
         team_names.append(team['full_name'])
         scores.append(tmp_scores)
-    scores_df = pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest'])
+    scores_df = round(pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest']),3)
 
     return scores_df
     
@@ -280,10 +280,12 @@ if __name__=='__main__':
         routcomes = joblib.load("./trained_models/routcomes.pkl")
 
 
-    # scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
+    scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
     # scores_df = scores_df.style.background_gradient(cmap ='YlOrRd').set_properties(**{'font-size': '20px'})
         # cmap ='viridis'
     
-    # scores_df.to_csv('scores.csv')
+    scores_df.to_csv('scores.csv')
 
     create_shotchart('Nikola Jokic', 'Denver Nuggets', '2021-22')
+
+    
