@@ -91,7 +91,8 @@ def draw_court(ax=None, color='black', lw=2, outer_lines=False):
 
         return ax
 
-def create_shotchart(shot_data):
+def create_shotchart(playername='Nikola Jokic', teamname='Denver Nuggets', season='2021-22'):
+    shot_data = ep.shotchartdetail.ShotChartDetail(player_id = get_player_id(playername), team_id = get_team_id(teamname), season_nullable = season).get_data_frames()[0]
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,11))
     groups = shot_data.groupby('SHOT_ZONE_BASIC')
     for name, group in groups:
@@ -279,8 +280,10 @@ if __name__=='__main__':
         routcomes = joblib.load("./trained_models/routcomes.pkl")
 
 
-    scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
+    # scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
     # scores_df = scores_df.style.background_gradient(cmap ='YlOrRd').set_properties(**{'font-size': '20px'})
         # cmap ='viridis'
     
-    scores_df.to_csv('scores.csv')
+    # scores_df.to_csv('scores.csv')
+
+    create_shotchart('Nikola Jokic', 'Denver Nuggets', '2021-22')
