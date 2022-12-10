@@ -302,6 +302,8 @@ class PlayerCareerStats(Endpoint):
         self.data_sets = [Endpoint.DataSet(data=data_set) for data_set_name, data_set in data_sets.items()]
         self.season_totals_regular_season = Endpoint.DataSet(data=data_sets['SeasonTotalsRegularSeason'])
 
+        
+
 
 
 if __name__=='__main__':
