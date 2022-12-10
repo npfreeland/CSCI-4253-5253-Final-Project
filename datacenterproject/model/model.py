@@ -123,7 +123,7 @@ def create_shotchart(shot_data):
 
 def get_game_data():
     #takes dataframe from minio bucket
-    # songbyte = minioClient.fget_object(queueBucketName, "game_data.csv",f"./inputs/game_data.csv")
+    songbyte = minioClient.fget_object(queueBucketName, "game_data.csv",f"./inputs/game_data.csv")
     games = pd.read_csv("./inputs/game_data.csv")
     games.columns = games.iloc[0]
     games = games.iloc[1:]
@@ -336,3 +336,4 @@ if __name__=='__main__':
         # cmap ='viridis'
     
     scores_df.to_csv('scores.csv')
+

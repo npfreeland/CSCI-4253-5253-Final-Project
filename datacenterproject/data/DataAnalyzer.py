@@ -50,7 +50,7 @@ def callback(ch, method, properties, body):
     # convert the dataframe to the csv
     csv = df.to_csv().encode('utf-8')
     # store it in the minio bucket
-    minioClient.put_object(queueBucketName,"/games/games.csv",data=BytesIO(csv),length=len(csv),content_type='application/csv')
+    minioClient.put_object(queueBucketName,"games.csv",data=BytesIO(csv),length=len(csv),content_type='application/csv')
 
 
 def createBuckets():
