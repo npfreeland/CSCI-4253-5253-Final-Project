@@ -60,6 +60,25 @@ Want to know about the upcoming game, you are in the right page! This page is fo
 <br></section>
 <div>
 <h4 style="color:#FFFFFF;"> Players</h4>
+
+<h3 style="color:#FFFFFF;">
+{% for i in HTML_List_Of_PlayersCareerStats %}
+  {% for key, value in i.items() %}
+    {{ key }} : {{ value }}
+  {% endfor %}
+{% endfor %}
+</h3>
+</div>
+
+<div>
+  <h4 style="color:#FFFFFF;"> Compare Teams</h4>
+</div>
+<div>
+  <h4 style="color:#FFFFFF;"> Compare Statistics</h4>
+</div>
+<div>
+  <h4 style="color:#FFFFFF;"> Standings</h4>
 </div></center>
   </body>
 </html>
+
