@@ -27,7 +27,7 @@
     <section id="title">
   <div class="con">
       <!-- Nav Bar before updation color was e4f9f5      navbar-light        navbar navbar-expand-lg -->
-      <nav class="navbar navbar navbar-expand-lg " >
+      <nav class="navbar navbar navbar-expand-lg  fixed-top " style="background-color: black;">
         <a class="navbar-brand" href="#"><h1 style= "color:#FFFFFF;">NBA STATS</h1></a>
 
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"  aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,11 +39,17 @@
               <a class="nav-link" href="home.html" ><h5 style="color:#FFFFFF;">HOME</h5> <span class="sr-only">(current)</span></a>
 
             </li>
-            <li class="nav-item active">
-              <a class="nav-link" href="https://www.nba.com/" ><h5 style="color:#FFFFFF;">ABOUT NBA</h5> <span class="sr-only">(current)</span></a>
+            <li class="nav-item">
+              <a class="nav-link"  href="#topPlayers" ><h5 style="color:#FFFFFF;">Top Player Statistics</h5></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link"  href="team.html" ><h5 style="color:#FFFFFF;">TEAM</h5></a>
+              <a class="nav-link"  href="#teamstatistics" ><h5 style="color:#FFFFFF;">Team Statistics</h5></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link"  href="#charts" ><h5 style="color:#FFFFFF;">Top Player Charts</h5></a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="https://www.nba.com/" ><h5 style="color:#FFFFFF;">ABOUT NBA</h5> <span class="sr-only">(current)</span></a>
             </li>
           </ul>
         </div>
@@ -58,27 +64,68 @@
 <h5 class="Srow" style="color:#FFFFFF;">
 Want to know about the upcoming game, you are in the right page! This page is for you. Scrolldown for more information on the statistics and prediction.</h5>
 <br></section>
-<div>
-<h4 style="color:#FFFFFF;"> Players</h4>
+<div  id= "topPlayers"style="color:#FFFFFF;">
+  <h4 style="color:#FFFFFF;">Top Players Statistics</h4>
+  <br>
+  <center>
+      <table id="statistics" style="font-family: 'Copperplate Gothic Light', cursive; color: #FFFFFF; font-size: 14px;">
+        {% for row in html_player_reader %}
+          <tr>
+          {% for col in row %}
+          <td> &nbsp; {{ col }}</td>
+          {% endfor %}
+          </tr>
+        {% endfor %}
+        </table>
+  </center>
+<div id="teamstatistics">
+  <br>
+<h4 style="color:#FFFFFF;"> Statistics</h4>
+<br>
+<center>
+<h6 style="color:#FFFFFF;">
+  <table id="statistics">
+    {% for row in html_score_reader %}
+      <tr>
+      {% for col in row %}
+      <td> &emsp; {{ col }}</td>
+      {% endfor %}
+      </tr>
+    {% endfor %}
+    </table>
+</h6></center>
+</div>
+<br>
 
-<h3 style="color:#FFFFFF;">
-{% for i in HTML_List_Of_PlayersCareerStats %}
-  {% for key, value in i.items() %}
-    {{ key }} : {{ value }}
-  {% endfor %}
-{% endfor %}
-</h3>
-</div>
+<div id="charts">
+  <h4 style="color:#FFFFFF;"> Top 5 Players Charts</h4>
 
-<div>
-  <h4 style="color:#FFFFFF;"> Compare Teams</h4>
+  <center>
+    <br>
+    <br>
+    <h5 style="color:#FFFFFF;"> Giannis Antetokounmpo</h5>
+    <img src="../static/images/Giannis Antetokounmpo.png" alt="Giannis Antetokounmpo.png" height=30% width=30%>
+    <br>
+    <br>
+    <h5 style="color:#FFFFFF;"> Joel Embiid</h5>
+    <img src="../static/images/Joel Embiid.png" alt="Joel Embiid.png" height=30% width=30%>
+    <br>
+    <br>
+    <h5 style="color:#FFFFFF;">Kevin Durant</h5>
+    <img src="../static/images/Kevin Durant.png" alt ="Kevin Durant.png" height=30% width=30%>
+    <br>
+    <br>
+    <h5 style="color:#FFFFFF;">Nikola Jokic</h5>
+    <img src="../static/images/Nikola Jokic.png" alt="Nikola Jokic.png" height=30% width=30%>
+    <br>
+    <br>
+    <h5 style="color:#FFFFFF;">Stephen Curry</h5>
+    <img src="../static/images/Stephen Curry.png" alt="Stephen Curry.png" height=30% width=30%>
+    <br>
+    <br>
+  </center>
 </div>
-<div>
-  <h4 style="color:#FFFFFF;"> Compare Statistics</h4>
-</div>
-<div>
-  <h4 style="color:#FFFFFF;"> Standings</h4>
-</div></center>
+</center>
   </body>
 </html>
 

@@ -1,14 +1,15 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pylab as plt
 import os
 import random as r
+import base64
 from nba_api.stats.endpoints._base import Endpoint
 from nba_api.stats.library.http import NBAStatsHTTP
 from nba_api.stats.library.parameters import PerMode36, LeagueIDNullable
-
+import matplotlib.pylab as plt
 from minio import Minio
 import joblib
+from io import BytesIO
 
 
 # %matplotlib inline
@@ -19,14 +20,14 @@ import nba_api.stats.endpoints as ep
 from nba_api.stats.static import teams
 from nba_api.stats.static import players
 
-from sklearn.model_selection import train_test_split
+
 
 # Helper function to draw court
 from matplotlib.patches import Circle, Rectangle, Arc
 
 
 
-
+list_top_players = ["Giannis Antetokounmpo","Kevin Durant","Nikola Jokic","Stephen Curry","Joel Embiid"]
 def draw_court(ax=None, color='black', lw=2, outer_lines=False):
         # If an axes object isn't provided to plot onto, just get current one
         if ax is None:
@@ -95,7 +96,8 @@ def draw_court(ax=None, color='black', lw=2, outer_lines=False):
 
         return ax
 
-def create_shotchart(shot_data):
+def create_shotchart(playername='Nikola Jokic', teamname='Denver Nuggets', season='2021-22'):
+    shot_data = ep.shotchartdetail.ShotChartDetail(player_id = get_player_id(playername), team_id = get_team_id(teamname), season_nullable = season).get_data_frames()[0]
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,11))
     groups = shot_data.groupby('SHOT_ZONE_BASIC')
     for name, group in groups:
@@ -116,15 +118,21 @@ def create_shotchart(shot_data):
     # in order to place the hoop by the top of plot
     plt.ylim(422.5, -47.5)
 
-    plt.savefig('sample.png')
+   
+
+    plt.savefig('./outputs/img/'+playername+'.png')
+    # img = open("./outputs/img/"+playername+".png")
+    # image = base64.b64encode(img).decode('utf-8')
+    minioClient.fput_object(outputBucketName,"img/"+playername+".png",'./outputs/img/'+playername+'.png')
+
 
     plt.show()
 
 
 def get_game_data():
     #takes dataframe from minio bucket
-    songbyte = minioClient.fget_object(queueBucketName, "game_data.csv",f"./inputs/game_data.csv")
-    games = pd.read_csv("./inputs/game_data.csv")
+    minioClient.fget_object(queueBucketName, "games.csv","./inputs/game.csv")
+    games = pd.read_csv("./inputs/game.csv")
     games.columns = games.iloc[0]
     games = games.iloc[1:]
     games.drop(columns=games.columns[0], 
@@ -211,7 +219,7 @@ def test_models_all(lclf, knn, clf, advclf, routcomes):
         tmp_scores = test_models_single_team(lclf, knn, clf, advclf, routcomes, team['full_name'])
         team_names.append(team['full_name'])
         scores.append(tmp_scores)
-    scores_df = pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest'])
+    scores_df = round(pd.DataFrame(scores,index=team_names,columns=['LinearSVC','KNN','SVC Predict','BaggingSVC','Random Forest']),3)
 
     return scores_df
     
@@ -283,8 +291,37 @@ class PlayerCareerStats(Endpoint):
         self.season_totals_regular_season = Endpoint.DataSet(data=data_sets['SeasonTotalsRegularSeason'])
 
         
+def top_10_playerCareerStats():
+    list_top_players_pcs = []
+   
+    for i in list_top_players:
+        l = PlayerCareerStats(player_id=get_player_id(i)).season_totals_regular_season.get_data_frame()
+        l = l[l["SEASON_ID"]=="2022-23"]
+        l.drop(['PLAYER_ID','LEAGUE_ID', 'TEAM_ID', 'PLAYER_AGE'], inplace=True, axis=1)
+        list_top_players_pcs.append([i]+l.values[0].tolist())
+    print(list_top_players_pcs)
+
+ # to get the column 
+    l = PlayerCareerStats(player_id=get_player_id(list_top_players[0])).season_totals_regular_season.get_data_frame()
+    l.drop(['PLAYER_ID','LEAGUE_ID', 'TEAM_ID', 'PLAYER_AGE'], inplace=True, axis=1)
+
+    list_df = pd.DataFrame(list_top_players_pcs,columns=['PLAYER_NAME']+l.columns.tolist())
+    return list_df
 
 
+from sklearn.model_selection import train_test_split
+
+
+def getBucketObjectNames(bucket,recursive=False):
+    try:
+        if minioClient.bucket_exists(bucket):
+            contents = [ x.object_name for x in minioClient.list_objects(bucket,recursive=recursive)]
+        else:
+            contents = []
+    except Exception as exp:
+        print(f"error in getBucketObjectNames({bucket})")
+        contents = []
+    return contents
 
 if __name__=='__main__':
     minioHost = os.getenv("MINIO_HOST") or "localhost:9000"
@@ -294,46 +331,79 @@ if __name__=='__main__':
     queueBucketName = "inputs"
     outputBucketName = "outputs"
 
-    nba_teams = teams.get_teams()
-    nba_players = players.get_players()
-
-    # if models do not exist, create them
-    path = '/home/User/Desktop/file.txt'
-    if not os.path.exists('./trained_models/'):
-        os.makedirs('./trained_models/')
-        
-        games = get_game_data()
-
-        train_games = games[games.SEASON_ID.str[-4:] != '2020']
-
-        outcomes = games[games.columns[7]]
-        gamestats = games[games.columns[10:27]]    
-
-        X_train = gamestats.to_numpy()
-        y_train = outcomes.to_numpy()
-
-        lclf, knn, clf, advclf, routcomes = create_models(X_train, y_train)
+    while True:
+        contents = getBucketObjectNames(queueBucketName,recursive=True)
 
 
-        # save models
-        joblib.dump(lclf, "./trained_models/lclf.pkl")
-        joblib.dump(knn, "./trained_models/knn.pkl")
-        joblib.dump(clf, "./trained_models/clf.pkl")
-        joblib.dump(advclf, "./trained_models/advclf.pkl")
-        joblib.dump(routcomes, "./trained_models/routcomes.pkl")
+        # since we have only one games.score in input bucket the for loop will go to max once
+        for i in contents:
 
-    else:
-        # load models
-        lclf = joblib.load("./trained_models/lclf.pkl")
-        knn = joblib.load("./trained_models/knn.pkl")
-        clf = joblib.load("./trained_models/clf.pkl")
-        advclf = joblib.load("./trained_models/advclf.pkl")
-        routcomes = joblib.load("./trained_models/routcomes.pkl")
+            nba_teams = teams.get_teams()
+            nba_players = players.get_players()
+
+            # if models do not exist, create them
+            path = '/home/User/Desktop/file.txt'
+            if not os.path.exists('./trained_models/'):
+                os.makedirs('./trained_models/')
+                
+                games = get_game_data()
+
+                train_games = games[games.SEASON_ID.str[-4:] != '2020']
+
+                outcomes = games[games.columns[7]]
+                gamestats = games[games.columns[10:27]]    
+
+                X_train = gamestats.to_numpy()
+                y_train = outcomes.to_numpy()
+
+                lclf, knn, clf, advclf, routcomes = create_models(X_train, y_train)
 
 
-    scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
-    # scores_df = scores_df.style.background_gradient(cmap ='YlOrRd').set_properties(**{'font-size': '20px'})
-        # cmap ='viridis'
+                # save models
+                joblib.dump(lclf, "./trained_models/lclf.pkl")
+                joblib.dump(knn, "./trained_models/knn.pkl")
+                joblib.dump(clf, "./trained_models/clf.pkl")
+                joblib.dump(advclf, "./trained_models/advclf.pkl")
+                joblib.dump(routcomes, "./trained_models/routcomes.pkl")
+
+            else:
+                # load models
+                lclf = joblib.load("./trained_models/lclf.pkl")
+                knn = joblib.load("./trained_models/knn.pkl")
+                clf = joblib.load("./trained_models/clf.pkl")
+                advclf = joblib.load("./trained_models/advclf.pkl")
+                routcomes = joblib.load("./trained_models/routcomes.pkl")
+
+
+            if os.path.exists("./outputs/img"):
+                pass
+            else:
+                os.makedirs("./outputs/img")
+        # Shotchart
+            create_shotchart('Giannis Antetokounmpo', 'Milwaukee Bucks', '2021-22')
+            create_shotchart('Kevin Durant', 'Brooklyn Nets', '2021-22')
+            create_shotchart('Stephen Curry', 'Golden State Warriors', '2021-22')
+            create_shotchart('Nikola Jokic', 'Denver Nuggets', '2021-22')
+            create_shotchart('Joel Embiid', 'Philadelphia 76ers', '2021-22')
+
+            # Scores
+            scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
+            csv1 = scores_df.to_csv().encode('utf-8')
+            # store it in the minio bucket
+            minioClient.put_object(outputBucketName,"csv/scores.csv",data=BytesIO(csv1),length=len(csv1),content_type='application/csv')
+
+
+            csv2 = top_10_playerCareerStats().to_csv(index=False).encode('utf-8')
+            # store it in the minio bucket
+            minioClient.put_object(outputBucketName,"csv/top_10_players_stats.csv",data=BytesIO(csv2),length=len(csv2),content_type='application/csv')
+
+            # remove input when everything is done.
+            minioClient.remove_object(queueBucketName,"games.csv")
+
+
+
     
-    scores_df.to_csv('scores.csv')
 
+
+
+    

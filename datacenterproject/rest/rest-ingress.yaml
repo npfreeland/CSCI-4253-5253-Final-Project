@@ -1,0 +1,22 @@
+#
+# See https://kubernetes.io/docs/concepts/services-networking/ingress/
+#
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-body-size: 16m
+spec:
+  rules:
+  - host: localhost
+  - http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: rest-server
+            port:
+              number: 5000

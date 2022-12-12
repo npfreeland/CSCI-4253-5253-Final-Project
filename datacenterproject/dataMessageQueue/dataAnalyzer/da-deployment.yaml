@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-analyzer
+  labels:
+    app: analyzer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analyzer
+  template:
+    metadata:
+      labels:
+        app: analyzer
+    spec:
+      containers:
+      - name: analyzer
+        image: jhansisaketa/data-analyzer
+        env:
+        - name: MINIO_HOST
+          value: "minio:9000"
+        - name: RABBIT_HOST
+          value: rabbitmq

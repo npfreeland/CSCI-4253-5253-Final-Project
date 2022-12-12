@@ -1,4 +1,4 @@
-import pika
+
 import json
 import os
 from minio import Minio
@@ -7,6 +7,7 @@ from io import BytesIO
 import pandas as pd
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import leaguestandings
+import pika
 # might need scoreboardv2
 
 
@@ -24,6 +25,8 @@ minioClient = Minio(minioHost,access_key = minioUser, secret_key=minioPasswd, se
 
 # RabbitMQ connection
 hostname= os.environ['RABBIT_HOST'] if 'RABBIT_HOST' in os.environ else 'localhost'
+
+print(hostname)
 
 # connecting RabbitMQ
 connection = pika.BlockingConnection(pika.ConnectionParameters(

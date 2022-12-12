@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-server
+  labels:
+    app: model
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: model
+  template:
+    metadata:
+      labels:
+        app: model
+    spec:
+      containers:
+      - name: model
+        image: jhansisaketa/model-server
+        env:
+        - name: MINIO_HOST
+          value: "minio:9000"
