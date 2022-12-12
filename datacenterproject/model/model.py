@@ -402,8 +402,20 @@ if __name__=='__main__':
 
 
 
+<<<<<<< HEAD
     
 
 
 
     
+=======
+    scores_df = test_models_all(lclf, knn, clf, advclf, routcomes)
+    # scores_df = scores_df.style.background_gradient(cmap ='YlOrRd').set_properties(**{'font-size': '20px'})
+        # cmap ='viridis'
+    
+    scores_df.to_csv('scores.csv')
+
+    create_shotchart('Nikola Jokic', 'Denver Nuggets', '2021-22')
+
+    
+>>>>>>> cf4cf3743b6014e9d437a03bc004892a80dbaec1
